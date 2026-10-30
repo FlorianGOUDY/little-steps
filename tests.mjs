@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+import vm from 'node:vm';
+import './public/bank.js';
+const bank=globalThis.TOEIC_BANK;
+assert.equal(bank.length,200);
+assert.equal(new Set(bank.map(q=>q.id)).size,200);
+assert.deepEqual([1,2,3,4,5,6,7].map(p=>bank.filter(q=>q.part===p).length),[6,25,39,30,30,16,54]);
+for(const q of bank){assert.equal(q.options.length,q.part===2?3:4);assert.equal(new Set(q.options).size,q.options.length);assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<q.options.length);assert.ok(q.explanation.length>10);if(q.part<5)assert.ok(q.audio);if(q.part===1)assert.ok(existsSync(`public/images/${q.image}.jpg`));}
+for(const [part,count]of [[3,3],[4,3],[6,4]]){const groups=new Set(bank.filter(q=>q.part===part).map(q=>q.group));for(const group of groups)assert.equal(bank.filter(q=>q.group===group&&q.part===part).length,count);}
+assert.equal(bank.filter(q=>q.part===7&&q.documents===1).length,29);
+assert.equal(bank.filter(q=>q.part===7&&q.documents>1).length,25);
+assert.equal(new Set(bank.filter(q=>q.audio).map(q=>q.group)).size,54);
+const dom=new Map;const element=s=>{if(!dom.has(s))dom.set(s,{innerHTML:'',textContent:'',classList:{add(){},remove(){},toggle(){}},focus(){}});return dom.get(s);};
+const saved=new Map;
+const context=vm.createContext({TOEIC_BANK:bank,TOEIC_PARTS:globalThis.TOEIC_PARTS,console,Date,Intl,Math,Set,Map,JSON,Number,String,Boolean,Array,Error,URL,Blob,FormData,document:{querySelector:element,querySelectorAll:()=>[],addEventListener(){}},navigator:{},location:{hash:'#home',protocol:'http:'},localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)},window:{addEventListener(){}},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,confirm:()=>true});
+vm.runInContext(readFileSync('public/app.js','utf8'),context);
+const run=s=>vm.runInContext(s,context);
+run(`start(bank.map(q=>q.id),'exam','Test','full');`);
+assert.equal(run('session.ids.length'),200);assert.equal(run('session.phase'),'listening');
+run('session.index=99;next();');assert.equal(run('session.index'),100);assert.equal(run('session.phase'),'reading');assert.ok(Math.abs(run('session.deadline-Date.now()')-75*60000)<1000);
+run('session.answers[bank[100].id]=bank[100].answer;finish();');assert.equal(run('state.attempts.length'),200);assert.equal(run('state.sessions[0].correct'),1);assert.equal(run('state.active'),null);
+run('state.attempts=[];state.sessions=[];start([bank[100].id],"practice","Test");session.answers[bank[100].id]=bank[100].answer;check();check();finish();');assert.equal(run('state.attempts.length'),1,'Practice results must not be counted twice');
+run('state.attempts=[];state.sessions=[];start([bank[100].id],"diagnostic","Test");session.answers[bank[100].id]=bank[100].answer;check();finish();');assert.equal(run('state.attempts.length'),1,'Diagnostic results must not be counted twice');
+run('state.attempts=[];state.sessions=[];start(bank.map(q=>q.id),"exam","Test","full");session.deadline=Date.now()-1000;tick();');assert.equal(run('session.phase'),'reading');assert.ok(run('session.deadline-Date.now()')<75*60000);
+run('session.deadline=Date.now()-1000;tick();');assert.equal(run('session'),null);assert.equal(run('state.sessions.length'),1);
+run('state.attempts=[];state.sessions=[];start(bank.map(q=>q.id),"exam","Test","full");session.deadline=Date.now()-76*60000;tick();');assert.equal(run('session'),null,'Both deadlines expire even while the app is closed');
+run(`state.attempts=[];log(bank[0],(bank[0].answer+1)%4);`);assert.equal(run('mistakes().length'),1);run('log(bank[0],bank[0].answer);');assert.equal(run('mistakes().length'),0);
+assert.equal(run(`esc('<img src=x onerror="alert(1)">')`),'&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
+const sw=readFileSync('public/sw.js','utf8');assert.ok(sw.includes("k.startsWith('little-steps-')"));
+const html=readFileSync('public/index.html','utf8');for(const path of [...html.matchAll(/(?:src|href)="\.\/([^"#]+)"/g)].map(m=>m[1]))assert.ok(existsSync('public/'+path),path);
+for(const f of ['public/app.js','public/bank.js','public/style.css'])assert.ok(!/https?:\/\//.test(readFileSync(f,'utf8').replace(/https:\/\/www\.(etsglobal\.org|ets\.org|iibc-global\.org)[^"\s<]+/g,'')),`${f}: unexpected remote resource`);
+console.log('PASS: 200 questions, 7 part counts, 54 audio groups, document grouping, assets, exam transitions/expiry, local persistence, single-count scoring, errors revision and HTML escaping.');

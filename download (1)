@@ -1,0 +1,6 @@
+node_modules/
+audio-input.json
+*.zip
+.env
+.env.*
+.DS_Store

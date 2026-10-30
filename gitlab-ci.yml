@@ -1,0 +1,10 @@
+deploy-pages:
+  image: node:22-alpine
+  script:
+    - npm run check
+  pages: true
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
