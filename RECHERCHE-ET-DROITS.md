@@ -48,3 +48,8 @@ Police : polices système uniquement. Code : HTML/CSS/JS local sans dépendance 
 - [GitLab Pages access control](https://docs.gitlab.com/user/project/pages/pages_access_control/) : activer Only Project Members pour un site privé. Le simple caractère privé du dépôt ne dispense pas de vérifier le réglage Pages.
 - Un hébergement séparé évite de modifier les fichiers du site OVH. Une URL peu connue et noindex ne sont pas une authentification.
 - Données de progression conservées localement ; pas d’envoi applicatif. Les hébergeurs peuvent journaliser les visites, et les voix système peuvent utiliser le réseau selon leur implémentation.
+
+
+## Mise à jour version 2
+
+Deux sujets originaux totalisent désormais 400 questions. La liste originale de 120 mots n’est pas une liste officielle ETS. Six phrases Tatoeba sont reproduites inchangées sous CC BY 2.0 FR, avec auteur, URL source et lien de licence visibles dans la page Ressources. Les métadonnées et le détail de la revue sont conservés dans content/approved.json. Aucun audio Tatoeba n’est redistribué : la voix est celle du navigateur. Les prochaines collectes restent dans une file de validation. Voir AUTOMATISATION.md.

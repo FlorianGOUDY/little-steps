@@ -1,20 +1,24 @@
 # Little Steps
 
-Application indépendante pour travailler la compréhension anglaise, avec une préparation au test TOEIC® Listening & Reading classique. Version locale préparée le 30 octobre 2026. Aucun déploiement ni changement de ton site OVH n’a été effectué.
+Application indépendante pour travailler la compréhension anglaise, avec une préparation au test TOEIC® Listening & Reading classique. Version 2 locale préparée le 30 octobre 2026. Aucun déploiement ni changement de ton site OVH n’a été effectué.
 
 ## Ce qui est inclus
 
-- 200 questions originales, corrigées en français, réparties 6 / 25 / 39 / 30 / 30 / 16 / 54.
+- 400 questions originales, corrigées en français : deux sujets de 200, chacun réparti 6 / 25 / 39 / 30 / 30 / 16 / 54. Choix du sujet dans Tests blancs.
 - 6 photographies de scènes fictives générées par IA, vérifiées par rapport aux réponses.
-- 54 documents audio lus à la demande : 6 photos, 25 questions-réponses, 13 conversations et 10 annonces. Les dialogues alternent les voix anglaises disponibles sur l’appareil.
+- 108 documents audio lus à la demande sur deux sujets : par sujet, 6 photos, 25 questions-réponses, 13 conversations et 10 annonces. Les dialogues alternent les voix anglaises disponibles sur l’appareil.
 - Listening et Reading chronométrés, simulation complète 45 + 75 minutes, diagnostic court, séances par partie, révision des erreurs.
 - Textes à trous, insertion de phrases, documents simples, doubles et triples, un horaire à croiser avec un dialogue.
 - Sauvegarde et reprise locale, profil, objectif quotidien, historique, export et import JSON.
 - Interface responsive, installation sur l’écran d’accueil, cache hors connexion après chargement initial en HTTPS.
 
+## Ajouts de la version 2
+
+120 mots avec traduction et exemples, téléchargeables en CSV ou en TSV pour Anki. Six dictées Tatoeba avec attribution et licence. Un workflow hebdomadaire gratuit propose de nouvelles phrases à relire. Aucune génération automatique de sujets complets. Voir [AUTOMATISATION.md](AUTOMATISATION.md) pour activer le workflow et valider les ajouts. Les fichiers pending ne sont jamais utilisés par l’application.
+
 ## Limites pédagogiques importantes
 
-Un seul sujet original de 200 questions : les différents modes réutilisent cette banque. Ce ne sont ni des annales ni un sujet officiel. La difficulté n’est pas étalonnée. Certains documents sont plus courts et simples que ceux du vrai test. Les photos sont synthétiques. Il ne faut pas traiter le résultat comme une prédiction de score ; aucun score artificiel sur 990 n’est affiché.
+Deux sujets originaux de 200 questions : les séances courtes réutilisent cette banque de 400. Le deuxième sujet reprend les six photos avec des énoncés différents ; les dialogues, annonces et textes sont nouveaux. Ce ne sont ni des annales ni un sujet officiel. La difficulté n’est pas étalonnée. Certains documents sont plus courts et simples que ceux du vrai test. Les photos sont synthétiques. Il ne faut pas traiter le résultat comme une prédiction de score ; aucun score artificiel sur 990 n’est affiché.
 
 La simulation respecte les effectifs par partie et les deux enveloppes de temps, mais pas la cadence d’un enregistrement officiel. Chaque document Listening est lancé manuellement, une fois par groupe en simulation ; les trois questions d’un dialogue ou d’une annonce partagent le document. Les questions des parties 3 et 4 sont affichées mais ne sont pas toutes lues automatiquement. Pas de reproduction de l’algorithme adaptatif, pas de Speaking & Writing.
 
@@ -27,6 +31,7 @@ Avec Node.js installé :
 ```powershell
 cd C:\Users\fgoudy\Documents\Site\toeic-companion
 node tests.mjs
+node scripts/test-content.mjs
 node server.mjs
 ```
 
@@ -50,7 +55,7 @@ Créer un projet privé, importer uniquement ce dossier avec `.gitlab-ci.yml`, p
 
 ## Option OVH
 
-Le ZIP `little-steps-ovh.zip` contient uniquement les fichiers publics. Décompresser dans un nouveau dossier réservé à l’application (par exemple `little-steps`, jamais à la place de la racine actuelle). Dans le Multisite OVH, un sous-domaine `anglais.TON-DOMAINE.fr` peut pointer sur ce dossier, avec HTTPS activé. Ne pas modifier le dossier racine du site principal.
+Le ZIP `little-steps-v2-ovh.zip` contient uniquement les fichiers publics. Décompresser dans un nouveau dossier réservé à l’application (par exemple `little-steps`, jamais à la place de la racine actuelle). Dans le Multisite OVH, un sous-domaine `anglais.TON-DOMAINE.fr` peut pointer sur ce dossier, avec HTTPS activé. Ne pas modifier le dossier racine du site principal.
 
 Un sous-domaine crée une origine différente dans le navigateur, contrairement à un simple sous-dossier ; un hébergement Pages séparé isole aussi les fichiers d’hébergement. Un sous-domaine reste toutefois sur le même compte OVH et ne constitue pas une isolation totale de l’hébergement. Si un accès privé est souhaité sur OVH, configurer une authentification côté serveur sur le dossier dédié. Ne pas ajouter un simple mot de passe en JavaScript : tous les fichiers resteraient téléchargeables.
 

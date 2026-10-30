@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {candidate,collect,LICENSES} from './collect-content.mjs';
+const valid={id:987654,lang:'eng',text:'The meeting will begin in ten minutes.',owner:'TestAuthor',license:'CC BY 2.0 FR',is_unapproved:false};
+assert.ok(candidate(valid));for(const patch of [{license:'PROBLEM'},{owner:null},{is_unapproved:true},{lang:'fra'},{text:'<script>meeting</script>'}])assert.equal(candidate({...valid,...patch}),null);
+const store=new Map([['content/pending.json',JSON.stringify({version:1,candidates:[]})],['content/reviewed-ids.json','[]']]);
+const read=async path=>{if(!store.has(path))throw Object.assign(Error(),{code:'ENOENT'});return store.get(path);},write=async(path,text)=>store.set(path,text);
+const fetcher=async()=>({ok:true,json:async()=>({data:[valid,{...valid,license:'PROBLEM',id:2}]})});
+await collect({fetcher,read,write,now:'2026-10-30T12:00:00Z'});const first=store.get('content/pending.json');assert.equal(JSON.parse(first).candidates.length,1);
+await collect({fetcher,read,write});assert.equal(store.get('content/pending.json'),first,'Repeated collection must not duplicate or churn candidates');
+await assert.rejects(()=>collect({fetcher:async()=>({ok:false,status:503}),read,write}));assert.equal(store.get('content/pending.json'),first,'Network failures must preserve existing data');
+store.set('content/reviewed-ids.json',JSON.stringify(['tatoeba-987654']));await collect({fetcher,read,write});assert.equal(JSON.parse(store.get('content/pending.json')).candidates.length,0,'Reviewed IDs must not return');
+const approved=JSON.parse(await readFile('content/approved.json','utf8'));assert.ok(approved.every(c=>c.status==='approved'&&c.reviewer&&LICENSES[c.license]===c.licenseUrl&&c.author&&/^https:\/\/tatoeba\.org\/en\/sentences\/show\/\d+$/.test(c.sourceUrl)));
+const source=await readFile('public/community-data.js','utf8');assert.ok(!source.includes('</script>'));assert.equal(JSON.parse(source.slice(source.indexOf('=')+1).trim().slice(0,-1)).length,approved.length);
+console.log('PASS: license allowlist, attribution, rejection of unsafe/unapproved data, deduplication, no writes on network failure, reviewed-ID exclusion and approved/public data consistency.');

@@ -1,1 +1,1 @@
-{"name":"little-steps-toeic","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node server.mjs","check":"node --check public/app.js && node --check public/bank.js && node tests.mjs"}}
+{"name":"little-steps","version":"2.0.0","private":true,"type":"module","scripts":{"start":"node server.mjs","check":"node --check public/app.js && node --check public/bank.js && node --check public/bank-extra.js && node --check public/extras-ui.js && node tests.mjs && node scripts/test-content.mjs && node scripts/test-proposals.mjs"}}

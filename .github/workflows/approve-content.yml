@@ -1,0 +1,42 @@
+name: Valider des dictees choisies
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'IDs relus, séparés par des virgules : tatoeba-123,tatoeba-456'
+        required: true
+        type: string
+      confirmed:
+        description: 'J’ai relu ces phrases et vérifié les liens, auteurs et licences.'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: approve-content
+  cancel-in-progress: false
+jobs:
+  approve:
+    if: ${{ inputs.confirmed }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Préparer les seuls IDs approuvés
+        run: node scripts/review-content.mjs --ids "$REVIEW_IDS" --reviewer "$REVIEWER" --confirm-reviewed
+        env:
+          REVIEW_IDS: ${{ inputs.ids }}
+          REVIEWER: ${{ github.actor }}
+      - run: npm run check
+      - name: Proposer l’activation
+        run: node scripts/propose-approved.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
